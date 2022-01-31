@@ -133,22 +133,63 @@ suite("Functional Tests", function () {
       });
     });
 
-    // suite(
-    //   "POST /api/books/[id] => add comment/expect book object with id",
-    //   function () {
-    //     test("Test POST /api/books/[id] with comment", function (done) {
-    //       assert.fail();
-    //     });
+    suite(
+      "POST /api/books/[id] => add comment/expect book object with id",
+      function () {
+        test("Test POST /api/books/[id] with comment", async () => {
+          const now = new Date().getTime();
+          const createRes = await chai
+            .request(server)
+            .post("/api/books")
+            .type("form")
+            .send({
+              title: `test-book-${now}`,
+            });
+          assert.equal(createRes.status, 200);
+          assert.exists(createRes.body._id);
+          assert.property(createRes.body, "title", `test-book-${now}`);
 
-    //     test("Test POST /api/books/[id] without comment field", function (done) {
-    //       assert.fail();
-    //     });
+          const _id = createRes.body._id;
 
-    //     test("Test POST /api/books/[id] with comment, id not in db", function (done) {
-    //       assert.fail();
-    //     });
-    //   }
-    // );
+          const commentRes = await chai
+            .request(server)
+            .post(`/api/books/${_id}`)
+            .type("form")
+            .send({
+              comment: now,
+            });
+          assert.equal(commentRes.status, 200);
+          assert.deepEqual(commentRes.body, {
+            _id: _id,
+            title: `test-book-${now}`,
+            commentcount: 1,
+            comments: [now.toString()],
+          });
+        });
+
+        test("Test POST /api/books/[id] without comment field", async () => {
+          const commentRes = await chai
+            .request(server)
+            .post(`/api/books/foo`)
+            .type("form")
+            .send({});
+          assert.equal(commentRes.status, 200);
+          assert.equal(commentRes.text, "missing required field comment");
+        });
+
+        test("Test POST /api/books/[id] with comment, id not in db", async () => {
+          const commentRes = await chai
+            .request(server)
+            .post(`/api/books/foo`)
+            .type("form")
+            .send({
+              comment: "bar",
+            });
+          assert.equal(commentRes.status, 200);
+          assert.equal(commentRes.text, "no book exists");
+        });
+      }
+    );
 
     // suite("DELETE /api/books/[id] => delete book object id", function () {
     //   test("Test DELETE /api/books/[id] with valid id in db", function (done) {

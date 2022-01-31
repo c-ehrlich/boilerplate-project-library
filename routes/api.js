@@ -45,7 +45,7 @@ module.exports = function (app) {
   app
     .route("/api/books/:id")
     .get(function (req, res) {
-      let bookid = req.params.id;
+      const bookid = req.params.id;
       Book.findOne({ _id: bookid }, "_id title comments", (err, book) => {
         if (!book) {
           // this needs to go before the `if (err)` check
@@ -62,9 +62,39 @@ module.exports = function (app) {
     })
 
     .post(function (req, res) {
-      let bookid = req.params.id;
-      let comment = req.body.comment;
+      const bookid = req.params.id;
+      const comment = req.body.comment;
+
+      if (!comment || comment === "") {
+        return res.send("missing required field comment");
+      }
+      Book.findOneAndUpdate(
+        { _id: bookid },
+        { $push: { comments: comment } },
+        { fields: "_id title comments", new: true },
+        (err, book) => {
+          if (!book) {
+            return res.send("no book exists");
+          }
+          if (err) {
+            console.error(err);
+            return res.send(`error: ${err}`);
+          }
+          const bookReturn = {
+            ...book._doc,
+            commentcount: book.comments.length,
+          };
+          return res.json(bookReturn);
+        }
+      );
       //json res format same as .get
+
+      // return res.send("missing required field comment");
+
+      // check if the book exists first, THEN if there is a comment
+
+      // if good: return the entire book, with the new comment AND commentcount
+      // MAYBE make prepareBookForJson a function, that strips out any unnecessary fields and adds commentcount?
     })
 
     .delete(function (req, res) {
