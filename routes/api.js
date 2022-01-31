@@ -38,8 +38,10 @@ module.exports = function (app) {
       });
     })
 
-    .delete(function (req, res) {
-      //if successful response will be 'complete delete successful'
+    .delete(async function (req, res) {
+      const deleteRes = await Book.deleteMany({});
+      console.log(`deleted ${deleteRes.deletedCount} items`);
+      res.send("complete delete successful");
     });
 
   app
@@ -87,14 +89,6 @@ module.exports = function (app) {
           return res.json(bookReturn);
         }
       );
-      //json res format same as .get
-
-      // return res.send("missing required field comment");
-
-      // check if the book exists first, THEN if there is a comment
-
-      // if good: return the entire book, with the new comment AND commentcount
-      // MAYBE make prepareBookForJson a function, that strips out any unnecessary fields and adds commentcount?
     })
 
     .delete(async function (req, res) {
