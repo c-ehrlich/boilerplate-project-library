@@ -13,9 +13,14 @@ const { Book } = require("../schema");
 module.exports = function (app) {
   app
     .route("/api/books")
-    .get(function (req, res) {
-      //response will be array of book objects
-      //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
+    .get(async (req, res) => {
+      Book.find({}, "title _id comments", (err, books) => {
+        books = books.map((book) => ({
+          ...book._doc,
+          commentcount: book.comments.length,
+        }));
+        res.json(books);
+      });
     })
 
     .post(function (req, res) {

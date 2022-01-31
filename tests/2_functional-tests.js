@@ -81,11 +81,27 @@ suite("Functional Tests", function () {
       }
     );
 
-    // suite("GET /api/books => array of books", function () {
-    //   test("Test GET /api/books", function (done) {
-    //     assert.fail();
-    //   });
-    // });
+    suite("GET /api/books => array of books", function () {
+      test("Test GET /api/books", async () => {
+        const now = new Date().getTime();
+        const createRes = await chai
+          .request(server)
+          .post("/api/books")
+          .type("form")
+          .send({
+            title: `test-book-${now}`,
+          });
+        assert.equal(createRes.status, 200);
+        assert.exists(createRes.body._id);
+        assert.property(createRes.body, "title", `test-book-${now}`);
+
+        const getRes = await chai.request(server).get("/api/books");
+        assert.equal(getRes.status, 200);
+        const length = getRes.body.length;
+        assert.isAtLeast(length, 1);
+        assert.equal(getRes.body[length - 1].title, `test-book-${now}`);
+      });
+    });
 
     // suite("GET /api/books/[id] => book object with [id]", function () {
     //   test("Test GET /api/books/[id] with id not in db", function (done) {
