@@ -192,7 +192,7 @@ suite("Functional Tests", function () {
     );
 
     suite("DELETE /api/books/[id] => delete book object id", function () {
-      test("Test DELETE /api/books/[id] with valid id in db", async (done) => {
+      test("Test DELETE /api/books/[id] with valid id in db", async () => {
         // create a book
         const now = new Date().getTime();
         const createRes = await chai.request(server).post("/api/books").type("form").send({
