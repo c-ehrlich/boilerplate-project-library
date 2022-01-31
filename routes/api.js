@@ -97,8 +97,19 @@ module.exports = function (app) {
       // MAYBE make prepareBookForJson a function, that strips out any unnecessary fields and adds commentcount?
     })
 
-    .delete(function (req, res) {
+    .delete(async function (req, res) {
       let bookid = req.params.id;
-      //if successful response will be 'delete successful'
+
+      Book.findOneAndDelete({ _id: bookid }, (err, book) => {
+        if (!book) {
+          return res.send("no book exists");
+        }
+        if (err) {
+          console.err(error);
+          return res.send(err);
+        }
+
+        return res.send("delete successful");
+      });
     });
 };

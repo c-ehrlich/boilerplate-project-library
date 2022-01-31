@@ -191,14 +191,37 @@ suite("Functional Tests", function () {
       }
     );
 
-    // suite("DELETE /api/books/[id] => delete book object id", function () {
-    //   test("Test DELETE /api/books/[id] with valid id in db", function (done) {
-    //     assert.fail();
-    //   });
+    suite("DELETE /api/books/[id] => delete book object id", function () {
+      test("Test DELETE /api/books/[id] with valid id in db", async (done) => {
+        // create a book
+        const now = new Date().getTime();
+        const createRes = await chai.request(server).post("/api/books").type("form").send({
+          title: `test-book-${now}`,
+        });
+        assert.equal(createRes.status, 200, "createRes should return 200");
+        assert.property(createRes.body, "title", `test-book-${now}`);
+        assert.exists(createRes.body._id);
 
-    //   test("Test DELETE /api/books/[id] with  id not in db", function (done) {
-    //     assert.fail();
-    //   });
-    // });
+        // delete the book
+        const _id = createRes.body._id;
+        const deleteRes = await chai.request(server).delete(`/api/books/${_id}`);
+        assert.equal(deleteRes.status, 200, "deleteRes should return 200");
+        assert.equal(deleteRes.text, "delete successful", "Deleting the book should succeed");
+
+        // make sure the book is deleted
+        const getRes = await chai
+          .request(server)
+          .get(`/api/books/${_id}`);
+        assert.equal(getRes.status, 200, "getRes should return 200");
+        assert.equal(getRes.text, "no book exists");
+      });
+
+      test("Test DELETE /api/books/[id] with  id not in db", async () => {
+        const badTitle = "foo";
+        const deleteRes = await chai.request(server).delete(`/api/books/${badTitle}`);
+        assert.equal(deleteRes.status, 200);
+        assert.equal(deleteRes.text, "no book exists");
+      });
+    });
   });
 });
