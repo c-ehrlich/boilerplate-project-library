@@ -103,15 +103,35 @@ suite("Functional Tests", function () {
       });
     });
 
-    // suite("GET /api/books/[id] => book object with [id]", function () {
-    //   test("Test GET /api/books/[id] with id not in db", function (done) {
-    //     assert.fail();
-    //   });
+    suite("GET /api/books/[id] => book object with [id]", function () {
+      test("Test GET /api/books/[id] with id not in db", async () => {
+        const getRes = await chai
+          .request(server)
+          .get("/api/books/ffffffffffffffffffffffff");
+        assert.equal(getRes.status, 200);
+        assert.equal(getRes.text, "no book exists");
+      });
 
-    //   test("Test GET /api/books/[id] with valid id in db", function (done) {
-    //     assert.fail();
-    //   });
-    // });
+      test("Test GET /api/books/[id] with valid id in db", async () => {
+        const now = new Date().getTime();
+        const createRes = await chai
+          .request(server)
+          .post("/api/books")
+          .type("form")
+          .send({
+            title: `test-book-${now}`,
+          });
+        assert.equal(createRes.status, 200);
+        assert.property(createRes.body, "title", `test-book-${now}`);
+        assert.exists(createRes.body._id);
+
+        const id = createRes.body._id;
+        const getRes = await chai.request(server).get(`/api/books/${id}`);
+        assert.equal(createRes.status, 200);
+        assert.property(createRes.body, "_id", `${id}`);
+        assert.property(createRes.body, "title", `test-book-${now}`);
+      });
+    });
 
     // suite(
     //   "POST /api/books/[id] => add comment/expect book object with id",

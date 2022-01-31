@@ -46,7 +46,19 @@ module.exports = function (app) {
     .route("/api/books/:id")
     .get(function (req, res) {
       let bookid = req.params.id;
-      //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
+      Book.findOne({ _id: bookid }, "_id title comments", (err, book) => {
+        if (!book) {
+          // this needs to go before the `if (err)` check
+          // because not getting an obj can happen both with and without err
+          return res.send("no book exists");
+        }
+        if (err) {
+          console.error(err);
+          return res.send("no book exists");
+        }
+        const bookReturn = { ...book._doc, commentcount: book.comments.length };
+        return res.json(bookReturn);
+      });
     })
 
     .post(function (req, res) {
