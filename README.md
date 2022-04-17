@@ -1,5 +1,3 @@
-
-
 # Personal Library
 
 Live demo: https://fcc-personal-library1.herokuapp.com/
